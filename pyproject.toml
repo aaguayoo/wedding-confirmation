@@ -1,13 +1,15 @@
 [tool.poetry]
-name = "Wedding Confirmation"
+name = "wedding-confirmation"
 version = "0.1.0"
 description = "Wedding confirmation Streamlit App"
 authors = ["Alejandro Aguayo-Ortiz <aaguayoo92@gmail.com>"]
 readme = "README.md"
-packages = [{include = "wedding-confirmation"}]
+packages = [{include = "wedding_confirmation"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
+streamlit = "^1.52.2"
+sqlalchemy = "^2.0.45"
 
 [tool.poetry.group.dev]
 optional = true
@@ -69,7 +71,7 @@ optional = true
 exclude_dirs = ["tests", "profiling", "app", "demo", "notebooks"]
 
 [tool.coverage.run]
-source = ["wedding-confirmation/"]
+source = ["wedding_confirmation/"]
 omit = [
     'tests/',
     '/tmp/',
@@ -86,7 +88,7 @@ multi_line_output = 3
 include_trailing_comma = true
 default_section = "THIRDPARTY"
 known_third_party = []
-known_first_party = ["wedding-confirmation"]
+known_first_party = ["wedding_confirmation"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
