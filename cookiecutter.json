@@ -1,0 +1,12 @@
+{
+    "git_username": "git.username",
+    "git_reponame": "git-reponame",
+    "author": "{{cookiecutter.git_username.title().replace('.',' ')}}",
+    "email": "{{cookiecutter.git_username}}@mail.com",
+    "project_name": "{{cookiecutter.git_reponame.title().replace('-',' ')}}",
+    "project_slug": "{{cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_')}}",
+    "description": "<Brief description of the project>",
+    "_copy_without_render": [
+        ".cz.toml"
+    ]
+}
