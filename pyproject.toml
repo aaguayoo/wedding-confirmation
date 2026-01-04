@@ -10,6 +10,8 @@ packages = [{include = "wedding_confirmation"}]
 python = ">=3.10,<3.13"
 streamlit = "^1.52.2"
 sqlalchemy = "^2.0.45"
+gspread = "^6.2.1"
+google-auth = "^2.45.0"
 
 [tool.poetry.group.dev]
 optional = true

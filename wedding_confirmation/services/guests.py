@@ -8,6 +8,12 @@ confirmation details.
 from sqlalchemy.orm import Session
 
 from wedding_confirmation.db.models import Guest
+from wedding_confirmation.integrations.google_sheets import (
+    get_worksheet,
+    read_guests_from_sheet,
+)
+
+FIELDS_FROM_SHEETS = {"Código" "Nombre", "Número de invitaciones", "Activo"}
 
 
 def get_guest_by_code(session: Session, code: str) -> Guest | None:
@@ -54,3 +60,140 @@ def confirm_attendance(
     guest.confirmed_guests = num_confirmed
     guest.comments = comments
     session.commit()
+
+
+def export_guests_to_google_sheets(session: Session) -> None:
+    """Export all guests from the database to the configured Google Sheets worksheet.
+
+    This function reads guest records from the database, transforms them into
+    a tabular format with predefined headers, and writes the data into the
+    worksheet so it reflects the current state of the guest list.
+
+    Args:
+        session: Database session used to query Guest records for export.
+
+    """
+    worksheet = get_worksheet()
+
+    guests = session.query(Guest).all()
+
+    headers = [
+        "Código",
+        "Nombre",
+        "Número de invitaciones",
+        "Confirmación",
+        "Lugares confirmados",
+        "Reserva Hotel de la Borda",
+        "Días reservados",
+        "Tipo de habitación",
+        "Comentarios",
+        "Activo",
+    ]
+
+    rows = [
+        [
+            g.code,
+            g.name,
+            g.allowed_guests,
+            g.confirmation,
+            g.confirmed_guests,
+            g.hotel_reservation,
+            g.reserved_days,
+            g.reserved_room,
+            g.comments,
+            g.isActive,
+        ]
+        for g in guests
+    ]
+
+    worksheet.clear()
+    worksheet.append_row(headers)  # type: ignore
+    worksheet.append_rows(rows)  # type: ignore
+
+
+def import_guests_from_google_sheets(session: Session) -> dict:
+    """Synchronize guest records from Google Sheets into the database.
+
+    This function reads guest rows from the configured Google Sheets worksheet,
+    creates new guests or updates existing ones based on their invitation code,
+    and returns a summary of how many records were created, updated, or
+    skipped.
+
+    Args:
+        session: Database session used to query and persist Guest records.
+
+    Returns:
+        A dictionary with counts of created, updated, and skipped guest
+        records during the import.
+
+    """
+    rows = read_guests_from_sheet()
+
+    created = 0
+    updated = 0
+    deleted = 0
+    skipped = 0
+
+    def is_active(value: object) -> bool:
+        """Determine whether a guest row from Google Sheets should be treated as active.
+
+        This helper interprets different textual representations of truth
+        (including localized values) and returns True when the value indicates
+        the guest is active.
+
+        Args:
+            value: Raw cell value from the "Activo" column in the sheet.
+
+        Returns:
+            True
+
+        """
+        return str(value).strip().lower() in {"true", "sí", "si", "1", "yes"}
+
+    for row in rows:
+        code = str(row.get("Código", "")).strip()
+
+        if not code:
+            skipped += 1
+            continue
+
+        active = is_active(row.get("Activo", True))
+
+        guest = session.query(Guest).filter(Guest.code == code).first()
+
+        # 🗑️ DELETE explícito
+        if not active:
+            if guest:
+                session.delete(guest)
+                deleted += 1
+            continue
+
+        # ✏️ UPDATE
+        if guest:
+            for field in FIELDS_FROM_SHEETS:
+                if field in row and row[field] not in ("", None):
+                    setattr(guest, field, row[field])
+            updated += 1
+
+        # ➕ INSERT
+        else:
+            try:
+                guest = Guest(
+                    code=code,
+                    name=row["Nombre"],
+                    allowed_guests=int(row["Número de invitaciones"]),
+                    comments=row.get("Comentarios"),
+                )
+                session.add(guest)
+                created += 1
+            except KeyError:
+                skipped += 1
+
+    session.commit()
+
+    return {
+        "created": created,
+        "updated": updated,
+        "deleted": deleted,
+        "skipped": skipped,
+    }

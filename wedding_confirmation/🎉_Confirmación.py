@@ -7,15 +7,9 @@ from wedding_confirmation.services.guests import confirm_attendance, get_guest_b
 
 st.title("Confirmación de Asistencia")
 
-codigo = st.text_input("Ingresa tu código de invitación")
-
-if codigo:
+if codigo := st.text_input("Ingresa tu código de invitación"):
     session = SessionLocal()
-    invitado = get_guest_by_code(session, codigo)
-
-    if not invitado:
-        st.error("Código no encontrado")
-    else:
+    if invitado := get_guest_by_code(session, codigo):
         st.success(f"Hola {invitado.name}")
         st.write(f"Invitados permitidos: {invitado.allowed_guests}")
 
@@ -25,15 +19,16 @@ if codigo:
             index=0 if invitado.confirmation == "si" else 1,
         )
 
-        num_confirmados = None
-        if confirmacion == "si":
-            num_confirmados = st.number_input(
+        num_confirmados = (
+            st.number_input(
                 "¿Cuántas personas asistirán?",
                 min_value=1,
                 max_value=invitado.allowed_guests,
                 value=invitado.confirmed_guests or 1,
             )
-
+            if confirmacion == "si"
+            else None
+        )
         comentarios = st.text_area(
             "Comentarios (opcional)", value=invitado.comments or ""
         )
@@ -43,3 +38,6 @@ if codigo:
                 session, invitado, confirmacion, num_confirmados, comentarios
             )
             st.success("¡Gracias por confirmar!")
+
+    else:
+        st.error("Código no encontrado")

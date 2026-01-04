@@ -30,7 +30,11 @@ class Guest(Base):
         allowed_guests: Number of guests allowed for this invitation.
         confirmation: Confirmation status of the invitation.
         confirmed_guests: Number of guests confirmed.
+        hotel_reservation: Confirmation for hotel reservation.
+        reserved_days: Days for the hotel reservation.
+        reserved_room: Type of room reserved.
         comments: Additional comments related to the invitation.
+        isActive: Boolean use to "delete" registry.
 
     """
 
@@ -41,6 +45,10 @@ class Guest(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
 
     allowed_guests: Mapped[int] = mapped_column(Integer, nullable=False)
-    confirmation: Mapped[str] = mapped_column(String, default="pending")
+    confirmation: Mapped[str] = mapped_column(String, default="Pendiente")
     confirmed_guests: Mapped[int | None] = mapped_column(Integer)
+    hotel_reservation: Mapped[str] = mapped_column(String, default="No")
+    reserved_days: Mapped[int | None] = mapped_column(Integer)
+    reserved_room: Mapped[str | None] = mapped_column(String)
     comments: Mapped[str | None] = mapped_column(String)
+    isActive: Mapped[bool] = mapped_column(String, default=True)
