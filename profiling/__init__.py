@@ -1,0 +1,1 @@
+"""Wedding Confirmation profiling init."""
