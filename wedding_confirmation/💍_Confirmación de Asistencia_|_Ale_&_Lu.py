@@ -3,7 +3,11 @@
 import streamlit as st
 
 from wedding_confirmation.db.session import SessionLocal
-from wedding_confirmation.services.guests import confirm_attendance, get_guest_by_code
+from wedding_confirmation.services.guests import (
+    confirm_attendance,
+    export_guests_to_google_sheets,
+    get_guest_by_code,
+)
 
 
 def load_css() -> None:
@@ -94,6 +98,9 @@ if codigo := st.text_input("Ingresa tu código de invitación"):
                 session, invitado, confirmacion, num_confirmados, comentarios
             )
             st.success(message)
+            session = SessionLocal()
+            export_guests_to_google_sheets(session)
+            session.close()
 
     else:
         st.error(

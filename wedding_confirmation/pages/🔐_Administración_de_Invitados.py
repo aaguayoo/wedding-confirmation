@@ -1,13 +1,10 @@
 """Admin Streamlit app."""
 
-from pathlib import Path
-
 import streamlit as st
 
 from wedding_confirmation.db.models import Base, Guest
 from wedding_confirmation.db.session import SessionLocal, engine
 from wedding_confirmation.services.guests import (
-    export_guests_to_google_sheets,
     import_guests_from_google_sheets,
 )
 from wedding_confirmation.utils.utils import generate_random_id
@@ -140,31 +137,13 @@ with placeholder.container():
             f"- Borrados: {result['deleted']}"
         )
 
-    if st.sidebar.button("Exportar a Google Sheets"):
-        session = SessionLocal()
-        export_guests_to_google_sheets(session)
-        session.close()
+    #    if st.sidebar.button("Exportar a Google Sheets"):
+    #        session = SessionLocal()
+    #        export_guests_to_google_sheets(session)
+    #        session.close()
+    #
+    #        st.success("Invitados exportados correctamente a Google Sheets")
 
-        st.success("Invitados exportados correctamente a Google Sheets")
+    st.sidebar.header("Base de datos")
 
-    st.sidebar.header("Base de datos local")
-
-    BASE_DIR = Path(__file__).resolve().parents[1]
-    DATA_DIR = BASE_DIR / "data" / "boda.db"
-
-    if not Path(DATA_DIR).exists() and st.sidebar.button("Crear tablas"):
-        Base.metadata.create_all(engine)
-        st.sidebar.success("Base de datos inicializada correctamente")
-
-    st.sidebar.error(
-        "¡Cuidado! Este proceso borra toda la base de datos local, pero no modifica lo "
-        "que existe en Google Sheets."
-    )
-    if st.sidebar.button("Resetear base de datos"):
-        from wedding_confirmation.db.models import Base
-        from wedding_confirmation.db.session import engine
-
-        Base.metadata.drop_all(engine)
-        Base.metadata.create_all(engine)
-
-        st.sidebar.success("Base de datos reseteada correctamente")
+    Base.metadata.create_all(engine)
