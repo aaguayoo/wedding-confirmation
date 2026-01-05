@@ -47,16 +47,22 @@ if codigo := st.text_input("Ingresa tu código de invitación"):
 
         st.markdown(f"### Hola, {invitado.group}")
         names = invitado.names.split(", ")
+        if invitado.confirmation == "Pendiente":
+            index = None
+        elif invitado.confirmation == "Sí":
+            index = 1
+        else:
+            index = 0
         confirmacion = st.radio(
             f"¿Podrá{'n' if len(names) != 1 else 's'} asistir a la boda?",
             ["Sí", "No"],
-            index=0 if invitado.confirmation == "Sí" else 1,
+            index=index,
         )
 
         if confirmacion == "Sí":
-            st.markdown(f"### Invitaciones disponibles: {invitado.allowed_guests}")
 
             if len(names) != 1:
+                st.markdown(f"### Invitaciones disponibles: {invitado.allowed_guests}")
                 num_confirmados = st.number_input(
                     "¿Cuántas personas asistirán?",
                     min_value=1,
