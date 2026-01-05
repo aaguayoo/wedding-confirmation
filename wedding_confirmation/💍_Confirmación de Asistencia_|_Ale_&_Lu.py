@@ -50,9 +50,9 @@ if codigo := st.text_input("Ingresa tu código de invitación"):
         if invitado.confirmation == "Pendiente":
             index = None
         elif invitado.confirmation == "Sí":
-            index = 1
-        else:
             index = 0
+        else:
+            index = 1
         confirmacion = st.radio(
             f"¿Podrá{'n' if len(names) != 1 else 's'} asistir a la boda?",
             ["Sí", "No"],
