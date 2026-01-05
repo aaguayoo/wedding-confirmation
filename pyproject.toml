@@ -12,7 +12,7 @@ streamlit = "^1.52.2"
 sqlalchemy = "^2.0.45"
 gspread = "^6.2.1"
 google-auth = "^2.45.0"
-psycopg2 = "^2.9.11"
+psycopg2-binary = "^2.9.11"
 
 [tool.poetry.group.dev]
 optional = true
