@@ -177,3 +177,6 @@ poetry.toml
 
 # Secrets
 secrets.toml
+
+# Data
+data/
