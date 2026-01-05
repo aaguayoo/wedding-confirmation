@@ -13,7 +13,7 @@ from wedding_confirmation.integrations.google_sheets import (
     read_guests_from_sheet,
 )
 
-FIELDS_FROM_SHEETS = {"Código" "Nombre", "Número de invitaciones", "Activo"}
+FIELDS_FROM_SHEETS = {"Código", "Grupo", "Nombres", "Número de invitaciones", "Activo"}
 
 
 def get_guest_by_code(session: Session, code: str) -> Guest | None:
@@ -79,7 +79,8 @@ def export_guests_to_google_sheets(session: Session) -> None:
 
     headers = [
         "Código",
-        "Nombre",
+        "Grupo",
+        "Nombres",
         "Número de invitaciones",
         "Confirmación",
         "Lugares confirmados",
@@ -93,7 +94,8 @@ def export_guests_to_google_sheets(session: Session) -> None:
     rows = [
         [
             g.code,
-            g.name,
+            g.group,
+            g.names,
             g.allowed_guests,
             g.confirmation,
             g.confirmed_guests,
@@ -180,7 +182,7 @@ def import_guests_from_google_sheets(session: Session) -> dict:
             try:
                 guest = Guest(
                     code=code,
-                    name=row["Nombre"],
+                    names=row["Nombres"],
                     allowed_guests=int(row["Número de invitaciones"]),
                     comments=row.get("Comentarios"),
                 )

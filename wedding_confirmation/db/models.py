@@ -40,9 +40,10 @@ class Guest(Base):
 
     __tablename__ = "guests"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True)
+    code: Mapped[str] = mapped_column(String, nullable=False)
+    group: Mapped[str] = mapped_column(String, nullable=False)
+    names: Mapped[str] = mapped_column(String, nullable=False)
 
     allowed_guests: Mapped[int] = mapped_column(Integer, nullable=False)
     confirmation: Mapped[str] = mapped_column(String, default="Pendiente")

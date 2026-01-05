@@ -10,134 +10,161 @@ from wedding_confirmation.services.guests import (
     export_guests_to_google_sheets,
     import_guests_from_google_sheets,
 )
+from wedding_confirmation.utils.utils import generate_random_id
 
 st.set_page_config(page_title="Admin – Wedding RSVP", page_icon="🔐")
 
 ADMIN_PASSWORD = st.secrets["ADMIN_PASSWORD"]
 
-pwd = st.text_input("Password de administración", type="password")
-if pwd != ADMIN_PASSWORD:
-    st.stop()
-
 
 st.title("Administración – Base de Datos")
 
-try:
-    session = SessionLocal()
-    st.session_state.guests = session.query(Guest).all()
-    session.close()
-except Exception:
-    st.session_state.guests = None  # type: ignore
-    st.warning("No data.")
+placeholder = st.empty()
 
+with placeholder.container(border=True):
+    pwd = st.text_input("Password de administración", type="password")
+    if pwd != ADMIN_PASSWORD:
+        st.stop()
 
-if "guests" in st.session_state and st.session_state.guests:
-    st.dataframe(
-        [
-            {
-                "Código": g.code,
-                "Nombre": g.name,
-                "Número de invitaciones": g.allowed_guests,
-                "Confirmación": g.confirmation,
-                "Lugares confirmados": g.confirmed_guests,
-            }
-            for g in st.session_state.guests
-        ]
+with placeholder.container():
+    try:
+        session = SessionLocal()
+        st.session_state.guests = session.query(Guest).all()
+        session.close()
+    except Exception:
+        st.session_state.guests = None  # type: ignore
+        st.error("No existe la tabla de SQL.")
+
+    if "guests" in st.session_state and st.session_state.guests:
+        st.dataframe(
+            [
+                {
+                    "Código": g.code,
+                    "Nombres": g.names,
+                    "Grupo": g.group,
+                    "Número de invitaciones": g.allowed_guests,
+                    "Confirmación": g.confirmation,
+                    "Lugares confirmados": g.confirmed_guests,
+                }
+                for g in st.session_state.guests
+            ]
+        )
+    else:
+        st.session_state["guests"] = None
+        st.warning("No hay invitados registrados")
+
+    st.header("Agregar invitado")
+
+    with st.container(border=True):
+        code = generate_random_id()
+
+        type_ = st.radio("¿Es individuo o famlia?", ["Invitado", "Familia"])
+
+        label = "Nombre" if type_ == "Invitado" else "Familia"
+        name = st.text_input(label)
+
+        allowed = (
+            st.number_input("Invitados permitidos", min_value=1, value=1)
+            if type_ == "Familia"
+            else 1
+        )
+
+        group = name
+        if allowed != 1:
+            names = []
+            with st.container(border=True):
+                for _ in range(allowed):
+                    guest_name = st.text_input(f"Invitado {_ + 1}")
+                    names.append(guest_name)
+        else:
+            names = [name]
+        submitted = st.button("Agregar")
+
+    if submitted:
+        session = SessionLocal()
+
+        guests = Guest(
+            code=code, names=", ".join(names), group=group, allowed_guests=allowed
+        )
+
+        session.add(guests)
+        session.commit()
+        session.close()
+
+        st.success(f"Invitado {name} agregado")
+
+    # st.header("Cargar invitados desde CSV")
+
+    # file = st.file_uploader("Selecciona archivo CSV", type="csv")
+
+    # if file:
+    #     df = pd.read_csv(file)
+    #     st.dataframe(df)
+
+    #     if st.button("Importar invitados"):
+    #         session = SessionLocal()
+
+    #         for _, row in df.iterrows():
+    #             guest = Guest(
+    #                 code=row["code"],
+    #                 name=row["name"],
+    #                 allowed_guests=int(row["allowed_guests"]),
+    #             )
+    #             session.add(guest)
+
+    #         session.commit()
+    #         session.close()
+
+    #         st.success("Invitados importados correctamente")
+
+    st.sidebar.header("Sincronización - Google Sheets")
+
+    st.sidebar.info(
+        "Esto importará invitados desde Google Sheets.\n\n"
+        "- Se crearán invitados nuevos\n"
+        "- Se actualizarán solo campos permitidos\n"
+        "- No se tocarán confirmaciones"
     )
-else:
-    st.session_state["guests"] = None
-    st.error("No hay invitados registrados")
 
+    if st.sidebar.button("Importar desde Google Sheets"):
+        session = SessionLocal()
 
-st.header("Agregar invitado")
+        result = import_guests_from_google_sheets(session)
+        session.close()
 
-with st.form("add_guest"):
-    code = st.text_input("Código único")
-    name = st.text_input("Nombre / Familia")
-    allowed = st.number_input("Invitados permitidos", min_value=1, value=1)
+        st.sidebar.success(
+            f"Importación completa:\n"
+            f"- Creados: {result['created']}\n"
+            f"- Actualizados: {result['updated']}\n"
+            f"- Ignorados: {result['skipped']}\n"
+            f"- Borrados: {result['deleted']}"
+        )
 
-    submitted = st.form_submit_button("Agregar")
+    if st.sidebar.button("Exportar a Google Sheets"):
+        session = SessionLocal()
+        export_guests_to_google_sheets(session)
+        session.close()
 
-if submitted:
-    session = SessionLocal()
+        st.success("Invitados exportados correctamente a Google Sheets")
 
-    guest = Guest(code=code, name=name, allowed_guests=allowed)
+    st.sidebar.header("Base de datos local")
 
-    session.add(guest)
-    session.commit()
-    session.close()
+    BASE_DIR = Path(__file__).resolve().parents[1]
+    DATA_DIR = BASE_DIR / "data" / "boda.db"
 
-    st.success(f"Invitado {name} agregado")
+    if not Path(DATA_DIR).exists() and st.sidebar.button("Crear tablas"):
+        Base.metadata.create_all(engine)
+        st.sidebar.success("Base de datos inicializada correctamente")
 
-
-# st.header("Cargar invitados desde CSV")
-
-# file = st.file_uploader("Selecciona archivo CSV", type="csv")
-
-# if file:
-#     df = pd.read_csv(file)
-#     st.dataframe(df)
-
-#     if st.button("Importar invitados"):
-#         session = SessionLocal()
-
-#         for _, row in df.iterrows():
-#             guest = Guest(
-#                 code=row["code"],
-#                 name=row["name"],
-#                 allowed_guests=int(row["allowed_guests"]),
-#             )
-#             session.add(guest)
-
-#         session.commit()
-#         session.close()
-
-#         st.success("Invitados importados correctamente")
-
-st.sidebar.header("Sincronización - Google Sheets")
-
-st.sidebar.info(
-    "Esto importará invitados desde Google Sheets.\n\n"
-    "- Se crearán invitados nuevos\n"
-    "- Se actualizarán solo campos permitidos\n"
-    "- No se tocarán confirmaciones"
-)
-
-if st.sidebar.button("Importar desde Google Sheets"):
-    session = SessionLocal()
-
-    result = import_guests_from_google_sheets(session)
-    session.close()
-
-    st.sidebar.success(
-        f"Importación completa:\n"
-        f"- Creados: {result['created']}\n"
-        f"- Actualizados: {result['updated']}\n"
-        f"- Ignorados: {result['skipped']}\n"
-        f"- Borrados: {result['deleted']}"
+    st.sidebar.error(
+        "¡Cuidado! Este proceso borra toda la base de datos local, pero no modifica lo "
+        "que existe en Google Sheets."
     )
+    if st.sidebar.button("Resetear base de datos"):
+        from wedding_confirmation.db.models import Base
+        from wedding_confirmation.db.session import engine
 
-if st.sidebar.button("Exportar a Google Sheets"):
-    session = SessionLocal()
-    export_guests_to_google_sheets(session)
-    session.close()
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
 
-    st.success("Invitados exportados correctamente a Google Sheets")
-
-st.sidebar.header("Base de datos local")
-
-BASE_DIR = Path(__file__).resolve().parents[1]
-DATA_DIR = BASE_DIR / "data" / "boda.db"
-
-if not Path(DATA_DIR).exists() and st.sidebar.button("Crear tablas"):
-    Base.metadata.create_all(engine)
-    st.sidebar.success("Base de datos inicializada correctamente")
-
-if st.sidebar.button("Resetear base de datos"):
-    from wedding_confirmation.db.models import Base
-    from wedding_confirmation.db.session import engine
-
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
-
-    st.sidebar.success("Base de datos reseteada correctamente")
+        st.sidebar.success("Base de datos reseteada correctamente")
