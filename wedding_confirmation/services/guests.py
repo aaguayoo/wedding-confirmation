@@ -182,6 +182,7 @@ def import_guests_from_google_sheets(session: Session) -> dict:
             try:
                 guest = Guest(
                     code=code,
+                    group=row["Grupo"],
                     names=row["Nombres"],
                     allowed_guests=int(row["Número de invitaciones"]),
                     comments=row.get("Comentarios"),
