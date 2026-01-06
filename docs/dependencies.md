@@ -4,6 +4,9 @@
 - **python**: >=3.10,<3.13
 - **streamlit**: ^1.52.2
 - **sqlalchemy**: ^2.0.45
+- **gspread**: ^6.2.1
+- **google-auth**: ^2.45.0
+- **psycopg**: {'extras': ['binary'], 'version': '^3.3.2'}
 
 ## Development Dependencies
 - **bandit**: ^1.7.8
