@@ -1,4 +1,12 @@
 /* ======================================================
+   TIPOGRAFÍA GLOBAL
+   ====================================================== */
+
+html {
+    font-size: 20px;
+}
+
+/* ======================================================
    BASE
    ====================================================== */
 
@@ -7,15 +15,16 @@
 }
 
 .stApp h1 {
+    font-family: "Huxley Vertical"!important;
     color:#3D5B4A;
-    letter-spacing: 0.08em;
-    font-size: 2.2rem;
+    letter-spacing: 0.1em;
+    font-size: 3.2rem;
     font-weight: 800;
     text-align: center;
-    font-family:
 }
 
 .stApp h2 {
+    font-family: "The Artist Sans"!important;
     color: #4A6A58;
     letter-spacing: 0.04em;
     font-size: 1.4rem;
@@ -26,7 +35,7 @@
 .stApp h3 {
     color: #5F7668;
     letter-spacing: 0.02em;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 800;
 }
 
@@ -37,14 +46,6 @@
 header[data-testid="stHeader"] {
     background-color: #3D5B4A;
     color: #92926C;
-}
-
-/* ======================================================
-   TIPOGRAFÍA GLOBAL
-   ====================================================== */
-
-html {
-    font-size: 20px;
 }
 
 /* ======================================================

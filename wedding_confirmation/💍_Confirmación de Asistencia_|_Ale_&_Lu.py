@@ -1,5 +1,8 @@
 """Streamlit app."""
 
+import base64
+from pathlib import Path
+
 import streamlit as st
 
 from wedding_confirmation.db.session import SessionLocal
@@ -11,14 +14,42 @@ from wedding_confirmation.services.guests import (
 
 
 def load_css() -> None:
-    """Load and apply the custom CSS styles for the confirmation app.
+    """Load the custom font and CSS styles for the Streamlit app.
 
-    This function reads the CSS file from the assets directory and injects its
-    contents into the Streamlit page so that the confirmation UI uses the
-    customized styling.
+    This function reads the font and CSS files, encodes the font, and injects
+    the resulting styles into the Streamlit page.
     """
-    with open("wedding_confirmation/assets/style.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    css_path = Path("wedding_confirmation/assets/style.css")
+    font1_path = Path("wedding_confirmation/assets/fonts/HuxleyVertical.otf")
+    font2_path = Path("wedding_confirmation/assets/fonts/TheArtistSans.otf")
+
+    font1_base64 = base64.b64encode(font1_path.read_bytes()).decode()
+    font2_base64 = base64.b64encode(font2_path.read_bytes()).decode()
+
+    with open(css_path) as f:
+        css = f.read()
+
+    font_face = f"""
+    <style>
+    @font-face {{
+        font-family: 'Huxley Vertical';
+        src: url(data:font/otf;base64,{font1_base64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }}
+
+    @font-face {{
+        font-family: 'The Artist Sans';
+        src: url(data:font/otf;base64,{font2_base64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }}
+
+    {css}
+    </style>
+    """
+
+    st.markdown(font_face, unsafe_allow_html=True)
 
 
 st.set_page_config(
@@ -35,7 +66,7 @@ st.image(
 )
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("# Confirmación de Asistencia")
+st.title("Confirmación de Asistencia", anchor=False)
 st.markdown(
     "## Nos hará muy felices contar contigo en este día tan especial 🫶. "
     "Por favor, ayúdanos confirmando tu asistencia y el número de lugares "
@@ -56,7 +87,7 @@ if not st.session_state.submitted:
             if invitado := get_guest_by_code(session, codigo):
                 st.markdown("---")
 
-                st.markdown(f"### Hola, {invitado.group}")
+                st.markdown(f"## Hola, {invitado.group}")
                 names = invitado.names.split(", ")
                 if invitado.confirmation == "Pendiente":
                     index = None
@@ -97,14 +128,14 @@ if not st.session_state.submitted:
                     if confirmacion == "Sí"
                     else (
                         "Gracias por tu respuesta. "
-                        f"{'Les vamos a extrañar ' if len(names) != 1 else 'Te vamos a extrañar '}"
-                        f"pero estará{'n' if len(names) != 1 else 's'} presente en nuestros corazones 😊."
+                        f"{'Les vamos a extrañar ' if len(names) != 1 else 'Te vamos a extrañar '}"  # noqa
+                        f"pero estará{'n' if len(names) != 1 else 's'} presente en nuestros corazones 😊."  # noqa
                     )
                 )
 
                 if st.button("Enviar confirmación"):
                     confirm_attendance(
-                        session, invitado, confirmacion, num_confirmados, comentarios
+                        session, invitado, confirmacion, num_confirmados, comentarios  # type: ignore  # noqa
                     )
 
                     st.session_state.submitted = True

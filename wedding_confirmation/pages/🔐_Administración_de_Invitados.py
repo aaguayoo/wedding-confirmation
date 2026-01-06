@@ -15,7 +15,7 @@ st.set_page_config(page_title="Admin – Wedding RSVP", page_icon="🔐")
 ADMIN_PASSWORD = st.secrets["ADMIN_PASSWORD"]
 
 
-st.title("Administración – Base de Datos")
+st.markdown("# Administración – Base de Datos")
 
 
 pwd = st.text_input("Password de administración", type="password")
@@ -116,7 +116,7 @@ if submitted:
 
 #         st.success("Invitados importados correctamente")
 
-st.sidebar.header("Sincronización - Google Sheets")
+st.sidebar.markdown("## Sincronización - Google Sheets")
 
 st.sidebar.info(
     "Esto importará invitados desde Google Sheets.\n\n"
@@ -146,7 +146,9 @@ if st.sidebar.button("Importar desde Google Sheets"):
 #
 #        st.success("Invitados exportados correctamente a Google Sheets")
 
-st.sidebar.header("Base de datos")
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("## Base de datos")
 
 if st.sidebar.button("Borrar base de datos"):
     Base.metadata.drop_all(engine)
