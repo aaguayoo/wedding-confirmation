@@ -37,9 +37,9 @@ st.image(
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("# Confirmación de Asistencia")
 st.markdown(
-    "## Nos hará muy felices poder contar contigo en este día tan especial. "
-    "Por favor, ayudannos confirmando tu asistencia y el número de lugares "
-    "que utilizarás 😊"
+    "## Nos hará muy felices contar contigo en este día tan especial 🫶. "
+    "Por favor, ayúdanos confirmando tu asistencia y el número de lugares "
+    "que utilizarás 😊."
 )
 st.markdown("---")
 
@@ -93,11 +93,12 @@ if not st.session_state.submitted:
                 )
 
                 message = (
-                    "¡Gracias por respuesta💜! Nos vemos pronto en Taxco 😊."
+                    "¡Gracias por respuesta 💜! Nos vemos pronto en Taxco 😊."
                     if confirmacion == "Sí"
                     else (
-                        "Gracias por tu respuesta. Qué lástima que no nos podrás "
-                        "acompañar, pero estarás presente en nuestros corazones 😊"
+                        "Gracias por tu respuesta. "
+                        f"{'Les vamos a extrañar ' if len(names) != 1 else 'Te vamos a extrañar '}"
+                        f"pero estará{'n' if len(names) != 1 else 's'} presente en nuestros corazones 😊."
                     )
                 )
 
