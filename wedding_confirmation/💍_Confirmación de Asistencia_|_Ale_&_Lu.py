@@ -38,9 +38,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("# Confirmación de Asistencia")
 st.markdown(
     "## Nos hará muy felices poder contar contigo en este día tan especial. "
-    "Por favor, ayudannos confirmando tu asistencia, el número de "
-    "invitaciones que utilizarás, y si reservarás habitación en el hotel donde "
-    "se realizará la boda. 😊"
+    "Por favor, ayudannos confirmando tu asistencia y el número de lugares "
+    "que utilizarás 😊"
 )
 st.markdown("---")
 
